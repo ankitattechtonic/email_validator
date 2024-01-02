@@ -1,5 +1,5 @@
 import 'dart:core';
-import 'package:email_validator/email_validator.dart';
+import 'package:flutter_email_validator/email_validator.dart';
 
 void main() {
   const String email = 'ankit.k.j1999@gmail.com';

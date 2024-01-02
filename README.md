@@ -32,7 +32,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-    email_validator: '^2.1.17'
+    email_validator: '^2.1.24'
 ```
 
 
@@ -62,7 +62,7 @@ Read the unit tests under `test`, or see code example below:
 ```Dart
 void main() {
 
-    var email = "fredrik@gmail.com";
+    var email = "ankit.k.j1999.com";
 
     assert(EmailValidator.validate(email));
 }
