@@ -1,6 +1,6 @@
 
-# **Email validator** [![Build status](https://ci.appveyor.com/api/projects/status/fb7ssu5fg8k334vi?svg=true)](https://ci.appveyor.com/project/fredeil/email-validator-dart) [![pub package](https://img.shields.io/badge/v2.1.24-ba?logo=asasa&label=pub&color=%232181C1
-)](https://pub.dev/packages/flutter_email_validator)
+# **Email validator** [![Build status](https://ci.appveyor.com/api/projects/status/fb7ssu5fg8k334vi?svg=true)](https://ci.appveyor.com/project/fredeil/email-validator-dart) [![pub package]<img alt="Static Badge" src="https://img.shields.io/badge/v2.1.24-s?label=pub">
+](https://pub.dev/packages/flutter_email_validator)
 
 ## This is a updated fork of [email_validator](https://pub.dev/packages/email_validator) package.
 
