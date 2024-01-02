@@ -1,0 +1,93 @@
+name: Publish
+
+on:
+ # This lets us run the release manually from github actions 
+ # and specify which tag/version, changelog and whether it's a pre-release
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version: git tag and package version you want create (sample 1.0.0)"
+        required: true
+
+      changelog:
+        description: "CHANGELOG.md notes"
+        required: true
+        default: "Bug fixes and performance improvements"
+
+      pre_release:
+        description: "Whether the release is a prerelease"
+        required: true
+        default: "false"
+        type: choice
+        options:
+        - "false"
+        - "true"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    container:
+      image: google/dart:latest
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+
+    steps:
+      - name: Configure Environment Variables
+        id: env
+        run: |
+          echo "FILE_PATH=pubspec.yaml" | tee -a "$GITHUB_ENV"
+          echo "GIT_TAG=${{ inputs.version }}" | tee -a "$GITHUB_ENV"
+          if [ ${{ inputs.pre_release }} = "true" ]; then
+            echo "GIT_TAG=${{ inputs.version }}-dev" | tee -a "$GITHUB_ENV"
+          fi
+      
+      - uses: actions/checkout@v3
+
+      - name: Update pubspec.yaml
+        run: sed -i -e 's/^\(\s*version\s*:\s*\).*/\1 ${{ env.GIT_TAG }}/' ${{ env.FILE_PATH }}
+
+      - name: Update CHANGELOG.md
+        run: printf '%s\n%s\n%s\n' "## ${{ env.GIT_TAG }}" "${{ inputs.changelog }}" "$(cat CHANGELOG.md)" >CHANGELOG.md
+
+      - name: Git commit pubspec.yaml and CHANGELOG.md
+        id: commit
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add pubspec.yaml
+          git add CHANGELOG.md
+          git commit -m "CI: Bump version to ${{ env.GIT_TAG }}"
+          echo "::set-output name=sha::$(git rev-parse HEAD)"
+
+      - name: Check sha
+        run: echo "SHA ${SHA}"
+        env:
+          SHA: ${{ steps.commit.outputs.sha }}
+
+      - name: Create Tag
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          custom_tag: ${{ env.GIT_TAG }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ inputs.changelog }}
+          tag_name: v${{ env.GIT_TAG }}
+          draft: 'false'
+          prerelease: ${{ inputs.pre_release }}
+          target_commitish: ${{ github.sha }}
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+          tags: true
+
+      - name: Publish to pub.dev 
+        run: |
+         mkdir -p $HOME/.config/dart
+         echo '${{ secrets.PUB_CREDENTIALS }}' > "$HOME/.config/dart/pub-credentials.json"
+         dart pub publish -f
